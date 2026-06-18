@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mìnoso Penelù — Chierico Luce Lv.14</title>
+<script>
+(function(){
+  var ow=console.warn,oe=console.error;
+  console.warn=function(){var a=arguments[0];if(typeof a==="string"&&(a.indexOf("tailwind")>-1||a.indexOf("Babel")>-1||a.indexOf("precompile")>-1))return;ow.apply(console,arguments)};
+  console.error=function(){var a=arguments[0];if(typeof a==="string"&&a.indexOf("Script error")>-1)return;oe.apply(console,arguments)};
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{margin:0;padding:0}*{box-sizing:border-box}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect}=React;
+// Persistenza locale: salva e carica lo stato dal browser
+function loadSaved(){try{var s=localStorage.getItem("minoso_lv14");return s?JSON.parse(s):null}catch(e){return null}}
+var SAVED=loadSaved()||{};
+
+const S={
+  nome:"Mìnoso Penelù",classe:"Chierico della Luce",lv:14,ca:20,pfMax:101,vel:"9m",bc:"+5",cd:18,att:"+10",
+  car:[{n:"FOR",v:14,m:"+2"},{n:"DES",v:10,m:"+0"},{n:"COS",v:14,m:"+2"},{n:"INT",v:12,m:"+1"},{n:"SAG",v:20,m:"+5"},{n:"CAR",v:12,m:"+1"}],
+  ts:[{n:"Forza",v:"+2",p:0},{n:"Destrezza",v:"+0",p:0},{n:"Costituzione",v:"+2",p:0},{n:"Intelligenza",v:"+1",p:0},{n:"Saggezza",v:"+10",p:1},{n:"Carisma",v:"+6",p:1}],
+  slot:{1:4,2:3,3:3,4:3,5:2,6:1,7:1},maxP:19
+};
+
+const EQ=[
+  {n:"Corazza di Piastre",t:"Armatura",d:"CA 18, pesante, svant. Furtività",e:1},
+  {n:"Scudo",t:"Armatura",d:"+2 CA, una mano occupata",e:1},
+  {n:"Mazza",t:"Arma",d:"1d6+2 contundenti, semplice. Att: +7",e:1},
+  {n:"Balestra Leggera",t:"Arma",d:"1d8 perforanti, 24/96m. Att: +5",e:0},
+  {n:"Fionda",t:"Arma",d:"1d4 contundenti, 9/36m",e:0},
+  {n:"Simbolo Sacro",t:"Focus",d:"Focus incantatore chierico",e:1},
+  {n:"Vestiti Cultista",t:"Oggetto",d:"Recuperati dalla grotta",e:0},
+  {n:"20 Razioni Carne",t:"Consumabile",d:"Cibo per 20 giorni",e:0},
+  {n:"1 Pozione",t:"Consumabile",d:"Tipo da determinare",e:0},
+  {n:"Testa Drago Nero",t:"Speciale",d:"Dalla statua, valore/uso rituale",e:0},
+  {n:"5 Mutande trofeo",t:"Trofeo",d:"Langdedrosa, Furlam, Borngray, Tardis, Rezmir",e:0},
+];
+
+const AB=[
+  {id:"la",n:"Lampo d'Interdizione",tp:"Reazione",us:"5/riposo lungo",
+    de:"Quando creatura entro 9m attacca te o alleato (dal 6 anche alleati): reazione per svantaggio al tiro colpire. Immune se non accecabile.",
+    qu:"Vs attacchi potenti, critici, proteggere alleati fragili. 5 usi/giorno.",tg:"dif"},
+  {id:"fu",n:"Fulgore dell'Alba (Inc. Divinita)",tp:"Azione",us:"2/riposo breve o lungo",
+    de:"Simbolo sacro: oscurita magica entro 9m dissolta. Ostili entro 9m: TS COS (CD 18). Fallimento: 2d10+14 radiosi. Successo: meta. No concentrazione.",
+    qu:"Devastante circondato (~23 danni area). Vs non morti e oscurita magica. Condivide usi con Scacciare.",tg:"off"},
+  {id:"sc",n:"Scacciare Non Morti (Inc. Divinita)",tp:"Azione",us:"2/riposo (condiviso)",
+    de:"Non morti entro 9m che ti vedono/sentono: TS SAG (CD 18). Fallimento: scacciato 1 min (fugge, no reazioni, solo Scatto/Schivata). DISTRUGGERE NON MORTI (lv14): GS 3 o inferiore che fallisce viene distrutto istantaneamente.",
+    qu:"Orde di non morti GS 3 o inferiore = annientati senza danni! (scheletri, zombie, ghoul, ombre, molti spettri). Vs non morti potenti: scacciati 1 min intero. Riserva un uso quando affronti non morti.",tg:"off"},
+  {id:"cp",n:"Colpo Incantatore Potente",tp:"Passivo",us:"Sempre",
+    de:"Aggiungi mod SAG (+5) ai danni trucchetti chierico. Fiamma Sacra: 3d8+5 radiosi (~18,5).",
+    qu:"Fiamma Sacra diventa attacco principale. Con Arma Spirituale: ~27 danni/turno senza slot.",tg:"off"},
+  {id:"iv",n:"Intervento Divino",tp:"Azione",us:"1 tentativo/riposo lungo",
+    de:"Tiri d100: con 14 o meno (14%), divinita interviene con qualsiasi incantesimo chierico/dominio.",
+    qu:"Tentalo SEMPRE: non costa nulla se fallisce! Resurrezioni, cure massive, miracoli.",tg:"spe"},
+  {id:"fo",n:"Fortunato (Talento)",tp:"Speciale",us:"3 punti/riposo lungo",
+    de:"Spendi 1 punto dopo aver visto risultato per tirare d20 aggiuntivo e scegliere. O quando nemico ti attacca: tira d20 per sostituire il suo.",
+    qu:"Conserva per: TS devastanti, tiri cruciali, far fallire critici nemici. NON sprecarli!",tg:"dif"},
+];
+
+const TR=[
+  {id:"fs",n:"Fiamma Sacra",te:"1 azione",gi:"18m",du:"Istantanea",
+    de:"TS DES (CD 18). 3d8+5 radiosi (~18,5). NON beneficia dalla copertura. 17 lv: 4d8+5.",
+    qu:"Attacco principale! Ignora coperture. ~18,5/turno gratis. Combo Arma Spirituale: ~27/round.",tg:"off"},
+  {id:"lu",n:"Luce (Dominio)",te:"1 azione",gi:"Contatto",du:"1 ora",
+    de:"Oggetto (max 3m) proietta luce intensa 6m + fioca 6m. Colore a scelta.",
+    qu:"Utility gratuita. Su scudo: mani libere per armi.",tg:"uti"},
+  {id:"gu",n:"Guida",te:"1 azione",gi:"Contatto",du:"Concentr., 1 min",
+    de:"Creatura toccata: +1d4 a UNA prova di caratteristica. Concentrazione.",
+    qu:"Fuori combattimento su OGNI prova del gruppo. +1d4 (media +2,5).",tg:"uti"},
+  {id:"ta",n:"Taumaturgia",te:"1 azione",gi:"9m",du:"1 min",
+    de:"Effetti soprannaturali: voce 3x, fiamma cambia, tremito, suoni, porte, occhi. Max 3 attivi.",
+    qu:"Roleplay e intimidazione divina. Nessun costo.",tg:"uti"},
+  {id:"sm",n:"Salvare i Morenti",te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Creatura con 0 PF diventa stabile. No non morti/costrutti.",
+    qu:"Gratuito. Contatto+azione. Usa Parola Guaritrice in emergenza.",tg:"cur"},
+];
+
+const DO=[
+  {id:"d1",n:"Mani Brucianti",l:1,te:"1 azione",gi:"Cono 4,5m",du:"Istantanea",
+    de:"Cono 4,5m: TS DES (CD 18). 3d6 fuoco (~10,5), meta successo. +1d6/slot sup. Incendia oggetti.",
+    qu:"Ravvicinato vs gruppi. Corridoi stretti. Slot 3: 5d6 (~17,5).",tg:"off"},
+  {id:"d2",n:"Dardo Tracciante (Faerie Fire)",l:1,te:"1 azione",gi:"18m",du:"Concentr., 1 min",
+    de:"Cubo 6m: TS DES (CD 18). Fallimento: delineati, VANTAGGIO attacchi contro. Nega invisibilita.",
+    qu:"MIGLIORE! Vantaggio TUTTO il gruppo. Solo slot 1! Round 1 vs gruppi. Concentrazione.",tg:"sup"},
+  {id:"d3",n:"Raggio Rovente",l:2,te:"1 azione",gi:"36m",du:"Istantanea",
+    de:"3 raggi fuoco, attacco +10 ciascuno: 2d6 fuoco/raggio. Divisibili. +1 raggio/slot. NO concentrazione!",
+    qu:"Danno singolo eccezionale: 6d6 (~21). No concentrazione! Slot 5: 6 raggi = 12d6 (~42)!",tg:"off"},
+  {id:"d4",n:"Sfera Infuocata",l:2,te:"1 azione",gi:"18m",du:"Concentr., 1 min",
+    de:"Sfera fuoco 1,5m. Fine turno entro 1,5m: TS DES, 2d6 fuoco. Az. bonus: muovi 9m. +1d6/slot.",
+    qu:"Danno continuo azione bonus. Incompatibile Guardiani. Meglio quando non sei in mischia.",tg:"off"},
+  {id:"d5",n:"Palla di Fuoco",l:3,te:"1 azione",gi:"45m",du:"Istantanea",
+    de:"Sfera raggio 6m: TS DES (CD 18). 8d6 fuoco (~28), meta successo. Oltre angoli. +1d6/slot.",
+    qu:"ICONICO. Area enorme, gittata lunga. ATTENZIONE: colpisce alleati! Slot 4: 9d6 (~31,5).",tg:"off"},
+  {id:"d6",n:"Luce Diurna",l:3,te:"1 azione",gi:"18m",du:"1 ora",
+    de:"Luce intensa 18m + fioca 18m. Dissolve oscurita magica slot 3 o inf. Su oggetto: si muove.",
+    qu:"Vs vampiri, oscurita magica, Sottoscuro. Raggio 18m enorme!",tg:"uti"},
+  {id:"d7",n:"Guardiano della Fede",l:4,te:"1 azione",gi:"9m",du:"8 ore, NO concentr.",
+    de:"Guardiano spettrale. Ostili entro 3m: TS DES (CD 18). Fallimento: 20 radiosi, successo: 10. Max 60 danni. NO concentrazione!",
+    qu:"FANTASTICO. 20 danni no concentrazione, 8 ore! Davanti porte/corridoi. Combo Guardiani Spirituali.",tg:"dif"},
+  {id:"d8",n:"Muro di Fuoco",l:4,te:"1 azione",gi:"36m",du:"Concentr., 1 min",
+    de:"Muro 18mx6m o circolare 6m diam. Un lato: 5d8 fuoco (TS DES dimezza). Opaco.",
+    qu:"Controllo campo FENOMENALE. Dividi nemici, intrappola. 5d8 (~22,5)/turno.",tg:"off"},
+  {id:"d9",n:"Colpo Infuocato",l:5,te:"1 azione",gi:"18m",du:"Istantanea",
+    de:"Colonna raggio 3m, altezza 12m: TS DES (CD 18). 4d6 fuoco + 4d6 radiosi (~28). +1d6/slot.",
+    qu:"Mix fuoco+radioso bypassa resistenze. Area piccola = evita alleati.",tg:"off"},
+  {id:"d0",n:"Scrutare",l:5,te:"10 min",gi:"Incantatore",du:"Concentr., 10 min",
+    de:"Vedi/odi creatura sul tuo piano. TS SAG modificato: conosciuta bene (-5), vista (0), descrizione (+5). Focus 1000+ mo.",
+    qu:"Spia nemici, localizza alleati. Gittata illimitata (stesso piano).",tg:"uti"},
+];
+
+const LI=[
+  {id:"be",n:"Benedizione",l:1,te:"1 azione",gi:"9m",du:"Concentr., 1 min",
+    de:"Fino a 3 creature entro gittata: ogni volta che effettuano tiro per colpire o TS, tirano 1d4 e lo aggiungono al risultato. Concentrazione fino a 1 min. +1 bersaglio per ogni slot superiore al 1.",
+    qu:"Buff gruppo potentissimo. +1d4 a TUTTO. Primo round se no Guardiani.",tg:"sup",c:1},
+  {id:"sf",n:"Scudo della Fede",l:1,te:"1 az. bonus",gi:"18m",du:"Concentr., 10 min",
+    de:"Una creatura: +2 CA per durata.",
+    qu:"+2 CA 10 min. Su di te = CA 22! Az. bonus. Alternativa Benedizione.",tg:"dif",c:1},
+  {id:"cf",n:"Cura Ferite",l:1,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Creatura a contatto recupera 1d8 + mod SAG (+5) PF. No effetto su non morti e costrutti. +1d8 per ogni slot superiore al 1. Slot 2: 2d8+5 (~14). Slot 3: 3d8+5 (~18,5). Slot 5: 5d8+5 (~27,5).",
+    qu:"Cura base. Upcastala per emergenze. Slot bassi in combattimento.",tg:"cur",c:1},
+  {id:"pg",n:"Parola Guaritrice",l:1,te:"1 az. bonus",gi:"18m",du:"Istantanea",
+    de:"Creatura a gittata che puoi vedere recupera 1d4 + mod SAG (+5) PF. No effetto su non morti o costrutti. +1d4 per ogni slot superiore al 1.",
+    qu:"SALVAVITA! Az. bonus + 18m = rialza a 0 PF da lontano. Solo emergenze.",tg:"cur",c:1},
+  {id:"co",n:"Comando",l:1,te:"1 azione",gi:"18m",du:"1 round",
+    de:"Una parola di comando a creatura che ti ode e capisce la tua lingua: TS SAG (CD 18). Fallimento: obbedisce nel suo prossimo turno. Comandi: 'Avvicinati' (muove verso te), 'Cadi' (prono, turno finisce), 'Fuggi' (allontana massima velocita), 'Fermati' (non agisce, turno perso), 'Molla' (lascia cadere oggetti). No non morti, no se non capisce lingua. +1 bersaglio/slot.",
+    qu:"Cadi = prono = vantaggio melee. Fermati vs incantatori. No concentrazione!",tg:"ctr",c:1},
+  {id:"sa",n:"Santuario",l:1,te:"1 az. bonus",gi:"9m",du:"1 min, NO concentr.",
+    de:"Chi attacca/bersaglia: TS SAG o nuovo bersaglio. Termina se protetto attacca.",
+    qu:"Combo: Santuario + Guardiani Spirituali = non possono attaccarti E danni auto!",tg:"dif",c:0},
+  {id:"if",n:"Infliggi Ferite",l:1,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Attacco mischia +10: 3d10 necrotici (~16,5). +1d10/slot.",
+    qu:"Danno singolo top lv1. Contatto + tiro. Se manchi slot perso.",tg:"off",c:0},
+  {id:"pb",n:"Protez. Bene/Male",l:1,te:"1 azione",gi:"Contatto",du:"Concentr., 10 min",
+    de:"Vs aberrazioni/celestiali/elementali/folletti/immondi/non morti: svantaggio attacchi, immunita charme/paura/possessione.",
+    qu:"Essenziale vs demoni, diavoli, non morti potenti. Concentrazione.",tg:"dif",c:0},
+  {id:"as",n:"Arma Spirituale",l:2,te:"1 az. bonus",gi:"18m",du:"1 min, NO concentr.!",
+    de:"Crei arma spettrale fluttuante a gittata (forma a scelta). Attacco mischia incantesimo +10: 1d8+5 forza. Turni succ.: az. bonus muovi 6m e ripeti attacco vs creatura entro 1,5m. Resta 1 min o finche non lo rilanci. +1d8 ogni 2 slot (slot 4: 2d8+5, slot 6: 3d8+5).",
+    qu:"MIGLIOR INCANTESIMO. NO concentrazione! R1: Arma. R2: Guardiani. R3+: Fiamma+Arma = ~27/turno!",tg:"off",c:1},
+  {id:"si",n:"Silenzio",l:2,te:"1 azione",gi:"36m",du:"Concentr., 10 min",
+    de:"Crei sfera di silenzio raggio 6m centrata su punto a gittata. Nessun suono puo essere creato o attraversare l'area. Creature interamente dentro sono assordate e immuni a danni da tuono. IMPOSSIBILE lanciare incantesimi con componente verbale dentro l'area. Lanciabile come rituale (senza slot).",
+    qu:"ANTI-MAGO. Su incantatore = non lancia quasi nulla! Gittata 36m.",tg:"ctr",c:1},
+  {id:"ai",n:"Aiuto",l:2,te:"1 azione",gi:"9m",du:"8 ore, NO concentr.",
+    de:"Fino a 3 creature entro gittata: PF massimi E attuali aumentano di 5 per 8 ore. Non richiede concentrazione. +5 PF per ogni slot superiore al 2. Slot 3: +10 PF. Slot 4: +15 PF. Slot 5: +20 PF ciascuno (60 PF totali al gruppo)!",
+    qu:"OGNI MATTINA! Slot 5: +20 PF x 3 = +60 PF gruppo! No concentrazione.",tg:"sup",c:1},
+  {id:"cs",n:"Cecita/Sordita",l:2,te:"1 azione",gi:"9m",du:"1 min, NO concentr.",
+    de:"TS COS (CD 18). Cieco o sordo 1 min (ripete TS). +1 bers./slot.",
+    qu:"Accecare = svantaggio attacchi + vantaggio vs. SENZA CONCENTRAZIONE!",tg:"ctr",c:0},
+  {id:"bp",n:"Blocca Persone",l:2,te:"1 azione",gi:"18m",du:"Concentr., 1 min",
+    de:"Umanoide: TS SAG (CD 18). Paralizzato. Mischia = CRITICI automatici! Solo umanoidi. +1/slot.",
+    qu:"Paralisi devastante. Critici auto melee! Solo umanoidi.",tg:"ctr",c:0},
+  {id:"ri",n:"Ristorare Inferiore",l:2,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Termina UNA: accecato, assordato, avvelenato, paralizzato, o malattia.",
+    qu:"Cura condizioni. Quando serve, serve SUBITO. Slot 2.",tg:"cur",c:0},
+  {id:"pr",n:"Preghiera di Guarigione",l:2,te:"10 min",gi:"9m",du:"Istantanea",
+    de:"Fino a 6 creature a gittata che puoi vedere recuperano ciascuna 2d8 + mod SAG (+5) PF (~14). No non morti/costrutti. +1d8 per ogni slot superiore al 2. Tempo di lancio 10 minuti: solo fuori combattimento!",
+    qu:"Cura FUORI COMBATTIMENTO. ~14 x 6 = ~84 PF con slot 2! Fantastico dopo scontri.",tg:"cur",c:0},
+  {id:"zv",n:"Zona di Verita",l:2,te:"1 azione",gi:"18m",du:"10 min",
+    de:"Sfera 4,5m: TS CAR. Fallimento: non possono mentire. TU SAI chi fallisce.",
+    qu:"Interrogatori, smascherare traditori.",tg:"uti",c:0},
+  {id:"gs",n:"Guardiani Spirituali",l:3,te:"1 azione",gi:"Inc. (4,5m)",du:"Concentr., 10 min",
+    de:"Richiami spiriti protettori che fluttuano a 4,5m intorno a te. Puoi designare creature immuni. Velocita ostili dimezzata nell'area. Quando creatura ostile entra 1a volta nel turno O inizia turno li: TS SAG (CD 18). Fallimento: 3d8 radiosi (~13,5). Successo: meta. +1d8/slot sup.",
+    qu:"IL MIGLIOR INCANTESIMO. Danni auto OGNI turno + vel. dimezzata, 10 min. CA 20 in prima linea! Combo Arma Spir.",tg:"off",c:1},
+  {id:"fs2",n:"Faro di Speranza",l:3,te:"1 azione",gi:"9m",du:"Concentr., 1 min",
+    de:"Conferisce speranza e vitalita. Qualsiasi numero di creature a gittata: vantaggio ai TS Saggezza, vantaggio ai TS contro morte, e da OGNI cura ottengono il massimo numero di PF possibili (niente tiri, automaticamente il massimo).",
+    qu:"Cure massime: Cura slot 3 = 29 PF garantiti! Vantaggio TS SAG. Boss fight difensiva.",tg:"sup",c:1},
+  {id:"pm",n:"Parola Guaritrice Massa",l:3,te:"1 az. bonus",gi:"18m",du:"Istantanea",
+    de:"6 creature: 1d4+5 PF ciascuna (~7,5).",
+    qu:"Emergenza! Rialza fino a 6 alleati caduti. Solo per rialzare.",tg:"cur",c:1},
+  {id:"dm",n:"Dissolvi Magie",l:3,te:"1 azione",gi:"36m",du:"Istantanea",
+    de:"Scegli creatura, oggetto o effetto magico a gittata. Ogni incantesimo di 3 livello o inf su bersaglio termina automaticamente. Per inc. di 4 livello o sup: prova di SAG con CD 10 + livello dell'incantesimo. A slot sup: termina auto inc. di livello pari o inf allo slot.",
+    qu:"Versatilissimo. Barriere, controllo mentale, buff nemici. SEMPRE PREPARATO.",tg:"uti",c:1},
+  {id:"rn",n:"Rinascita (Revivify)",l:3,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Tocchi creatura morta da non piu di 1 minuto. Torna in vita con 1 PF se non morta di vecchiaia. Non ripristina parti corpo mancanti. Componente: diamanti 300 mo (consumati).",
+    qu:"SEMPRE PREPARATO + PORTA DIAMANTI 300 mo. Assicurazione vita gruppo.",tg:"cur",c:1},
+  {id:"in",n:"Inviare",l:3,te:"1 azione",gi:"Illimitata",du:"1 round",
+    de:"Messaggio 25 parole a creatura nota, qualsiasi distanza. Risponde 25 parole.",
+    qu:"Comunicazione illimitata. Avverti alleati, coordina, rinforzi.",tg:"uti",c:0},
+  {id:"pe",n:"Protez. Energia",l:3,te:"1 azione",gi:"Contatto",du:"Concentr., 1 ora",
+    de:"Resistenza a 1 tipo: acido, freddo, fuoco, fulmine, tuono. Danni dimezzati.",
+    qu:"Pre-draghi: dimezza TUTTI danni tipo. 1 ora.",tg:"dif",c:0},
+  {id:"rm",n:"Rimuovi Maledizione",l:3,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Maledizioni terminate. Oggetto maledetto: sintonia rotta.",
+    qu:"Maledizioni da oggetti, incantesimi, licantropia.",tg:"cur",c:0},
+  {id:"es",n:"Esilio",l:4,te:"1 azione",gi:"18m",du:"Concentr., 1 min",
+    de:"TS CAR (CD 18). Bandita semipiano. Extraplanare + 1 min concentr. = PERMANENTE. +1 bers./slot.",
+    qu:"Rimuovi nemico 1 min. Vs extraplanari: PERMANENTE! Slot 5: 2 creature.",tg:"ctr",c:1},
+  {id:"im",n:"Interdizione alla Morte",l:4,te:"1 azione",gi:"Contatto",du:"8 ore, NO concentr.",
+    de:"Prima volta a 0 PF: va a 1 PF. Termina.",
+    qu:"ASSICURAZIONE. Al mattino sul tank. 8 ore, no concentr., no costi.",tg:"dif",c:1},
+  {id:"lm",n:"Liberta di Movimento",l:4,te:"1 azione",gi:"Contatto",du:"1 ora, NO concentr.",
+    de:"Immune terreno difficile, no paralisi/riduz. velocita magica, sfugge restrizioni.",
+    qu:"Vs mind flayer, ghoul (paralisi). 1 ora no concentr.",tg:"dif",c:0},
+  {id:"lc",n:"Localizza Creatura",l:4,te:"1 azione",gi:"Incantatore",du:"Concentr., 1 ora",
+    de:"Direzione creatura nota entro 300m. Bloccato da acqua corrente.",
+    qu:"Tracking nemici, PNG rapiti. 300m.",tg:"uti",c:0},
+  {id:"dv",n:"Divinazione (Rituale)",l:4,te:"1 azione",gi:"Incantatore",du:"Istantanea",
+    de:"Domanda a divinita su evento entro 7 giorni. Responso veritiero criptico. Rituale.",
+    qu:"Pianificazione! Risposte veritiere. Rituale = senza slot.",tg:"uti",c:0},
+  {id:"cm",n:"Cura Ferite di Massa",l:5,te:"1 azione",gi:"18m",du:"Istantanea",
+    de:"6 creature in sfera 9m: 3d8+5 PF (~18,5). +1d8/slot.",
+    qu:"Emergenza gruppo. ~18,5 x 6 = ~111 PF! Slot 5 costoso ma ribalta tutto.",tg:"cur",c:1},
+  {id:"ra",n:"Rianimare Morti",l:5,te:"1 ora",gi:"Contatto",du:"Istantanea",
+    de:"Creatura morta da non piu di 10 giorni: se anima consenziente, torna con 1 PF. Neutralizza veleni e malattie non magiche (non maledizioni). Non ripristina parti corpo mancanti (se manca parte vitale, fallisce). Penalita -4 a tiri colpire, TS e prove (-1 per riposo lungo). Non morta = incantesimo fallisce. Diamante 500 mo consumato.",
+    qu:"Quando Rinascita tardi. 10 giorni finestra! 500 mo.",tg:"cur",c:0},
+  {id:"db",n:"Dissolvi Bene e Male",l:5,te:"1 azione",gi:"Incantatore",du:"Concentr., 1 min",
+    de:"Svantaggio attacchi da extraplanari/non morti. Azione: libera charme/paura o bandisci (TS CAR).",
+    qu:"Protez. Bene/Male potenziata + capacita offensive.",tg:"dif",c:0},
+  {id:"pi",n:"Piaga degli Insetti",l:5,te:"1 azione",gi:"90m",du:"Concentr., 10 min",
+    de:"Sfera 6m: terreno difficile, oscurata. TS COS, 4d10 perforanti (~22). +1d10/slot.",
+    qu:"Danno area gittata ENORME 90m! Alternativa Guardiani da lontano.",tg:"off",c:0},
+  {id:"cn",n:"Comunione (Rituale)",l:5,te:"1 min",gi:"Incantatore",du:"1 min",
+    de:"3 domande si/no alla divinita. Risposte corrette. Rituale.",
+    qu:"Info dalla divinita! Rituale = senza slot.",tg:"uti",c:0},
+  {id:"rs",n:"Ristorare Superiore",l:5,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Riduci 1 indebolimento O termina: charme, pietrificazione, maledizione, riduz. PF max. Diamante 100 mo.",
+    qu:"Unico modo rimuovere indebolimento! Pietrificazione permanente senza questo.",tg:"cur",c:0},
+  {id:"gg",n:"Guarigione",l:6,te:"1 azione",gi:"18m",du:"Istantanea",
+    de:"Una creatura a gittata recupera 70 PF (valore fisso, niente dadi). Termina automaticamente QUALSIASI cecita, sordita e malattia che affligga il bersaglio. No effetto su costrutti e non morti. A slot sup: +10 PF per ogni slot superiore al 6.",
+    qu:"Cura piu potente: 70 PF FISSI + rimozione condizioni. Gittata 18m! Solo 1 slot 6.",tg:"cur",c:1},
+  {id:"bl",n:"Barriera di Lame",l:6,te:"1 azione",gi:"27m",du:"Concentr., 10 min",
+    de:"Muro lame: 30mx6m o circolare 18m diam. 3/4 copertura. TS DES: 6d10 taglienti (~33).",
+    qu:"SUPERIORE a Muro Fuoco: piu danni (6d10), piu lungo (30m), copertura.",tg:"off",c:1},
+  {id:"rt",n:"Parola del Ritiro",l:6,te:"1 azione",gi:"1,5m",du:"Istantanea",
+    de:"Tu + 5 creature: teletrasporto in santuario preparato.",
+    qu:"Teletrasporto emergenza gruppo! Serve preparazione santuario.",tg:"uti",c:0},
+  {id:"vv",n:"Visione del Vero",l:6,te:"1 azione",gi:"Contatto",du:"1 ora",
+    de:"Vista pura: vede cose come sono, porte segrete, Piano Etereo 36m. Penetra illusioni. 25 mo.",
+    qu:"Vs illusionisti, shapeshifter, porte segrete magiche.",tg:"uti",c:0},
+  {id:"fe",n:"Ferire",l:6,te:"1 azione",gi:"18m",du:"Istantanea",
+    de:"TS COS (CD 18). 14d6 necrotici (~49) + riduzione PF max. Successo: meta, no riduzione.",
+    qu:"DEVASTANTE: ~49 danni + riduz. PF max. Vs boss con tanti PF.",tg:"off",c:0},
+  {id:"ap",n:"Alleato Planare",l:6,te:"10 min",gi:"18m",du:"Istantanea",
+    de:"Divinita invia celestiale/elementale. Non obbligato: negozia. GM decide.",
+    qu:"Alleato potente ma tratta. Solo con preparazione.",tg:"spe",c:0},
+  {id:"bh",n:"Banchetto degli Eroi",l:6,te:"10 min",gi:"9m",du:"Istant. (dopo 1h)",
+    de:"Max 12 creature (1h consumo). Cura malattie/veleni, immunita veleni+paura, vantaggio TS SAG, +2d10 PF. 24h. 1000 mo!",
+    qu:"Buff pre-boss definitivo ma 1000 mo! Solo boss finali.",tg:"sup",c:0},
+  {id:"pd",n:"Parola Divina",l:7,te:"1 az. bonus",gi:"9m",du:"Istantanea",
+    de:"Pronunci parola divina infusa di potere. Creature a gittata che puoi vedere e possono udirti: TS CAR (CD 18). Effetto in base ai PF attuali: 50 PF o meno = assordate 1 min. 40 PF o meno = accecate e assordate 10 min. 30 PF o meno = accecate, assordate e stordite 1 ora. 20 PF o meno = UCCISE istantaneamente. Celestiali, elementali, fatati e immondi che falliscono: respinti al piano d'origine per 24h.",
+    qu:"DEVASTANTE su nemici indeboliti. Azione bonus! Uccide istantaneamente sotto 20 PF. Respinge demoni/diavoli/elementali al loro piano. Usala per finire gruppi di nemici malmessi.",tg:"off",c:0},
+  {id:"re",n:"Resurrezione",l:7,te:"1 ora",gi:"Contatto",du:"Istantanea",
+    de:"Morto da meno di 100 anni: torna con TUTTI i PF. Ricrescono parti mancanti. Neutralizza veleni/malattie normali. Penalita -4 (recupera 1/riposo). Diamante 1000 mo consumato.",
+    qu:"Molto superiore a Rianimare Morti: 100 anni finestra, PF pieni, ricrescita arti. 1000 mo di diamanti (NON 500!). Molto superiore a Rianimare: PF pieni, ricrescita arti, 100 anni finestra.",tg:"cur",c:0},
+  {id:"tf",n:"Tempesta di Fuoco",l:7,te:"1 azione",gi:"45m",du:"Istantanea",
+    de:"Tempesta di fiamme: max 10 cubi da 3m di spigolo, disposti come preferisci (ogni cubo deve avere almeno 1 faccia adiacente a un altro). TS DES (CD 18). Fallimento: 7d10 fuoco (~38,5). Successo: meta. Incendia oggetti non trasportati. Se desideri, la vegetazione resta illesa.",
+    qu:"Area PERSONALIZZABILE! 10 cubi disposti come vuoi = colpisci solo nemici, eviti alleati. 7d10 (~38,5) supera Palla di Fuoco (8d6 ~28). Top danno area di 7 livello.",tg:"off",c:0},
+  {id:"rg",n:"Rigenerazione",l:7,te:"1 min",gi:"Contatto",du:"1 ora",
+    de:"Stimoli guarigione naturale della creatura toccata: recupera 4d8+15 PF (~33) subito. Per tutta la durata (1 ora), il bersaglio recupera 1 PF all'inizio di ogni suo turno (10 PF/min, 600 PF totali). Parti del corpo mancanti (dita, gambe, code) ricrescono in 2 minuti. Se tieni la parte recisa al moncone, si riattacca istantaneamente.",
+    qu:"Cura potentissima: ~33 PF immediati + 600 PF nell'ora + ricrescita arti. Per combattimenti lunghi la rigenerazione continua e eccezionale. Costa 1 min di lancio.",tg:"cur",c:0},
+  {id:"ec",n:"Evoca Celestiale",l:7,te:"1 min",gi:"27m",du:"Concentr., 1 ora",
+    de:"Evochi celestiale GS 4 o inferiore in spazio non occupato a gittata. Amichevole, tira iniziativa propria, obbedisce comandi verbali (no azione richiesta) purche non violino allineamento. Scompare a 0 PF o fine incantesimo. Se non dai ordini, si difende ma non agisce. A slot 9: GS 5 o inferiore.",
+    qu:"Alleato potente che combatte per te 1 ora! GS 4 = creatura seria. A differenza di Alleato Planare, questo OBBEDISCE senza negoziare. 1 min di lancio: preparati prima del combattimento.",tg:"off",c:0},
+  {id:"fe2",n:"Forma Eterea",l:7,te:"1 azione",gi:"Incantatore",du:"Fino a 8 ore",
+    de:"Entri nel Confine Etereo, sovrapposto al tuo piano. Vedi e odi il piano d'origine (tutto appare grigio, max 18m). Muoversi su/giu costa doppio. Ignori oggetti del piano materiale (attraversi muri!). Creature non eteree non ti percepiscono. Azione per terminare. Se finisci dentro oggetto solido: spostato e 6 danni da forza per metro. A slot 8+: fino a 3 creature aggiuntive per slot.",
+    qu:"Esplorazione/infiltrazione perfetta: attraversi muri, pavimenti, soffitti. Invisibile e intangibile. 8 ore! Scouting dungeon, fuggire prigioni, bypassare difese. Attenzione a creature eteree (ghost).",tg:"uti",c:0},
+  {id:"si7",n:"Simbolo",l:7,te:"1 min",gi:"Contatto",du:"Finche non attivato",
+    de:"Iscrivi un glifo dannoso su una superficie o dentro un oggetto chiudibile. Scegli effetto: Morte (10d10 necrotici), Discordia, Paura, Sonno, Dolore, Stordimento o Insanita. Si attiva quando creatura tocca/entra. Sfera 18m. Comp: mercurio + diamante 1000 mo consumati.",
+    qu:"Trappola magica devastante. 10d10 per Morte! Perfetto per proteggere luoghi importanti, dungeon, santuari. Richiede 1000 mo ma dura finche non si attiva. Pianifica in anticipo.",tg:"ctr",c:0},
+  {id:"sp",n:"Spostamento Planare",l:7,te:"1 azione",gi:"Contatto",du:"Istantanea",
+    de:"Tu + 8 creature consenzienti (mano nella mano): trasportati su un altro piano di esistenza. Serve verga metallica biforcuta da 250+ mo sintonizzata col piano.",
+    qu:"Viaggio tra i piani per 9 persone! Serve la verga giusta per il piano. Per raggiungere piani superiori, inferiori, elementali. Avventure planari.",tg:"uti",c:0},
+];
+
+const tc={off:"bg-red-100 text-red-800",dif:"bg-blue-100 text-blue-800",cur:"bg-green-100 text-green-800",
+  sup:"bg-yellow-100 text-yellow-800",ctr:"bg-purple-100 text-purple-800",uti:"bg-gray-200 text-gray-700",
+  spe:"bg-orange-100 text-orange-800"};
+
+function Badge({children,cl}){return <span className={"text-xs px-1.5 py-0.5 rounded-full "+(cl||"bg-gray-100 text-gray-600")}>{children}</span>}
+
+function SC({s,ip,onT,sp}){
+  const[o,setO]=useState(false);
+  return(
+    <div className={"border rounded-lg mb-1.5 "+(ip?"bg-amber-50 border-amber-300":"bg-white border-gray-200")}>
+      <div className="flex items-start">
+        {sp&&<button onClick={function(e){e.stopPropagation();onT&&onT(s.id)}}
+          className={"ml-2 mt-3 w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center "+(ip?"bg-amber-500 border-amber-500 text-white":"border-gray-300")}>
+          {ip&&<span className="text-xs">&#10003;</span>}
+        </button>}
+        <button onClick={function(){setO(!o)}} className="flex-1 text-left px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="font-semibold text-sm">{s.n}</span>
+            {s.l>0&&<Badge cl="bg-violet-100 text-violet-700">{"Lv"+s.l}</Badge>}
+            <Badge cl={tc[s.tg]||tc.uti}>{s.tg}</Badge>
+          </div>
+          <span className="text-gray-400 text-sm ml-1">{o?"\u25B2":"\u25BC"}</span>
+        </button>
+      </div>
+      {o&&<div className="px-3 pb-3 border-t border-gray-100">
+        <div className="grid grid-cols-2 gap-x-3 mt-2 text-xs text-gray-500">
+          {s.te&&<div><b>Tempo:</b> {s.te}</div>}
+          {s.gi&&<div><b>Gittata:</b> {s.gi}</div>}
+          {s.du&&<div><b>Durata:</b> {s.du}</div>}
+          {s.tp&&<div><b>Tipo:</b> {s.tp}</div>}
+          {s.us&&<div><b>Usi:</b> {s.us}</div>}
+        </div>
+        <p className="text-sm text-gray-700 mt-2">{s.de}</p>
+        <div className="mt-2 bg-amber-50 border-l-4 border-amber-400 px-3 py-2 rounded-r">
+          <p className="text-sm text-amber-900"><b>Quando:</b> {s.qu}</p>
+        </div>
+      </div>}
+    </div>);
+}
+
+function UT({nome,max,bg,u,setU}){
+  return(
+    <div className="flex items-center justify-between bg-white rounded-lg border px-3 py-2 mb-1.5">
+      <span className="text-xs font-medium text-gray-700 flex-1">{nome}</span>
+      <div className="flex items-center gap-1">
+        <button onClick={function(){setU(Math.max(0,u-1))}} className="w-6 h-6 rounded bg-gray-100 text-sm font-bold">-</button>
+        <div className="flex gap-0.5 mx-1">{Array.from({length:max}).map(function(_,i){
+          return <div key={i} className={"w-4 h-4 rounded-full "+(i<max-u?(bg||"bg-amber-500"):"bg-gray-200")}/>
+        })}</div>
+        <button onClick={function(){setU(Math.min(max,u+1))}} className="w-6 h-6 rounded bg-gray-100 text-sm font-bold">+</button>
+      </div>
+    </div>);
+}
+
+function SloT({lv,tot,u,setU}){
+  return(
+    <div className="flex items-center bg-white rounded-lg border px-3 py-2">
+      <span className="text-xs font-bold w-8">{lv+"\u00B0"}</span>
+      <div className="flex gap-1 flex-1 justify-center">{Array.from({length:tot}).map(function(_,i){
+        return <button key={i} onClick={function(){setU(i<u?i:i+1)}}
+          className={"w-7 h-7 rounded-lg border-2 text-xs font-bold "+(i<u?"bg-gray-200 border-gray-300":"bg-amber-100 border-amber-400 text-amber-700")}>
+          {i<u?"\u2715":"\u25C6"}
+        </button>
+      })}</div>
+      <span className="text-xs text-gray-400 w-10 text-right">{(tot-u)+"/"+tot}</span>
+    </div>);
+}
+
+var tabList=[{i:"tr",l:"\u2694 Tracker"},{i:"pr",l:"\uD83D\uDCD6 Preparaz."},{i:"do",l:"\u2600 Dominio"},
+  {i:"ab",l:"\u2B50 Abilita"},{i:"tc",l:"\u2728 Trucchetti"},{i:"eq",l:"\uD83D\uDEE1 Equip."},{i:"st",l:"\uD83D\uDCCA Stats"}];
+
+function App(){
+  const[tab,setTab]=useState("tr");
+  const[prep,setPrep]=useState(function(){return SAVED.prep||LI.filter(function(s){return s.c}).map(function(s){return s.id})});
+  const[pf,setPf]=useState(SAVED.pf!=null?SAVED.pf:S.pfMax);
+  const[tpf,setTpf]=useState(SAVED.tpf||0);
+  const[fL,setFL]=useState(0);
+  const[fT,setFT]=useState("");
+  const[q,setQ]=useState("");
+  const[onlyPrep,setOnlyPrep]=useState(false);
+  const[slotsUsed,setSlotsUsed]=useState(SAVED.slotsUsed||{1:0,2:0,3:0,4:0,5:0,6:0,7:0});
+  const[lampo,setLampo]=useState(SAVED.lampo||0);
+  const[incan,setIncan]=useState(SAVED.incan||0);
+  const[fort,setFort]=useState(SAVED.fort||0);
+
+  // Salva automaticamente ogni modifica
+  useEffect(function(){
+    try{localStorage.setItem("minoso_lv14",JSON.stringify({prep:prep,pf:pf,tpf:tpf,slotsUsed:slotsUsed,lampo:lampo,incan:incan,fort:fort}))}catch(e){}
+  },[prep,pf,tpf,slotsUsed,lampo,incan,fort]);
+
+  var setSlot=function(lv,val){setSlotsUsed(function(p){var n=Object.assign({},p);n[lv]=val;return n})};
+  var longRest=function(){setSlotsUsed({1:0,2:0,3:0,4:0,5:0,6:0,7:0});setLampo(0);setIncan(0);setFort(0);setPf(S.pfMax);setTpf(0)};
+  var tog=function(id){setPrep(function(p){return p.indexOf(id)>=0?p.filter(function(x){return x!==id}):p.length>=S.maxP?p:p.concat([id])})};
+  var byL={};LI.forEach(function(s){if(!byL[s.l])byL[s.l]=[];byL[s.l].push(s)});
+  var matchQ=function(s){if(!q)return true;var t=q.toLowerCase();return s.n.toLowerCase().indexOf(t)>=0||(s.de&&s.de.toLowerCase().indexOf(t)>=0)};
+  // Applica danno: scala prima i PF temporanei, poi quelli reali
+  var dmg=function(n){var rem=n;setTpf(function(t){if(t>=rem){return t-rem}rem=rem-t;return 0});setTimeout(function(){setPf(function(p){return Math.max(0,p-Math.max(0,rem))})},0)};
+  var heal=function(n){setPf(function(p){return Math.min(S.pfMax,p+n)})};
+  var totSlot=0,usedSlot=0;[1,2,3,4,5,6,7].forEach(function(l){totSlot+=S.slot[l];usedSlot+=slotsUsed[l]});
+
+  return(
+    <div className="min-h-screen bg-gray-50" style={{fontFamily:"Segoe UI,system-ui,sans-serif"}}>
+      <div className="bg-gradient-to-br from-amber-700 via-orange-700 to-red-800 text-white px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <div><h1 className="text-lg font-bold">{S.nome}</h1><p className="text-xs opacity-80">{S.classe+" \u2014 Lv."+S.lv}</p></div>
+          <div className="flex gap-2 text-xs">
+            <div className="bg-white bg-opacity-20 rounded px-2 py-1 text-center"><div className="opacity-70 text-[10px]">SLOT</div><div className="font-bold">{(totSlot-usedSlot)+"/"+totSlot}</div></div>
+          </div>
+        </div>
+        <div className="bg-white bg-opacity-15 rounded-lg p-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold">PF {pf}<span className="opacity-50">{"/"+S.pfMax}</span>{tpf>0?<span className="text-cyan-200">{" +"+tpf+" temp"}</span>:null}</span>
+            <div className="flex gap-1">
+              <button onClick={function(){dmg(1)}} className="bg-red-500 bg-opacity-80 rounded px-1.5 text-xs font-bold leading-tight">-1</button>
+              <button onClick={function(){dmg(5)}} className="bg-red-500 bg-opacity-80 rounded px-1.5 text-xs font-bold leading-tight">-5</button>
+              <button onClick={function(){dmg(10)}} className="bg-red-600 bg-opacity-80 rounded px-1.5 text-xs font-bold leading-tight">-10</button>
+              <button onClick={function(){heal(5)}} className="bg-green-500 bg-opacity-80 rounded px-1.5 text-xs font-bold leading-tight">+5</button>
+              <button onClick={function(){setTpf(tpf+5)}} className="bg-cyan-500 bg-opacity-80 rounded px-1.5 text-xs font-bold leading-tight">+T</button>
+            </div>
+          </div>
+          <input type="range" min="0" max={S.pfMax} value={pf} onChange={function(e){setPf(parseInt(e.target.value))}}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+            style={{background:"linear-gradient(to right, "+(pf<=S.pfMax*0.25?"#f87171":pf<=S.pfMax*0.5?"#fbbf24":"#4ade80")+" "+(pf/S.pfMax*100)+"%, rgba(255,255,255,0.25) "+(pf/S.pfMax*100)+"%)"}}/>
+        </div>
+        <div className="flex gap-2 mt-2 text-xs flex-wrap">
+          {["CA 20","CD 18","Att +10","Comp +5","Vel 9m"].map(function(s){return <span key={s} className="bg-white bg-opacity-20 px-2 py-0.5 rounded">{s}</span>})}
+        </div>
+      </div>
+
+      <div className="flex overflow-x-auto border-b bg-white shadow-sm">
+        {tabList.map(function(t){return <button key={t.i} onClick={function(){setTab(t.i)}}
+          className={"px-2.5 py-2 text-xs font-medium whitespace-nowrap border-b-2 "+(tab===t.i?"border-orange-600 text-orange-700 bg-orange-50":"border-transparent text-gray-500")}>{t.l}</button>})}
+      </div>
+
+      <div className="p-3 pb-20 max-w-xl mx-auto">
+
+        {tab==="tr"&&<div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base font-bold">Tracker Combattimento</h2>
+            <button onClick={longRest} className="text-xs font-bold bg-indigo-600 text-white rounded-full px-3 py-1.5 shadow active:bg-indigo-700">🌙 Riposo Lungo</button>
+          </div>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Slot Incantesimo</h3>
+            <div className="space-y-1">{[1,2,3,4,5,6,7].map(function(l){return <SloT key={l} lv={l} tot={S.slot[l]} u={slotsUsed[l]} setU={function(v){setSlot(l,v)}}/>})}</div>
+          </div>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Usi Abilita</h3>
+            <UT nome="Lampo d'Interdizione" max={5} bg="bg-blue-500" u={lampo} setU={setLampo}/>
+            <UT nome="Incanalare Divinita" max={2} bg="bg-amber-500" u={incan} setU={setIncan}/>
+            <UT nome="Fortunato" max={3} bg="bg-green-500" u={fort} setU={setFort}/>
+          </div>
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200 p-3">
+            <h3 className="text-xs font-bold text-red-700 uppercase mb-2">Combo Round per Round</h3>
+            <div className="space-y-1.5 text-sm">
+              <div className="bg-white rounded px-3 py-2 border-l-4 border-red-400"><b className="text-red-700">R1:</b> Arma Spirituale (bonus) + Benedizione o Dardo Tracciante</div>
+              <div className="bg-white rounded px-3 py-2 border-l-4 border-orange-400"><b className="text-orange-700">R2:</b> Guardiani Spirituali (azione) + Attacco arma (bonus)</div>
+              <div className="bg-white rounded px-3 py-2 border-l-4 border-yellow-500"><b className="text-yellow-700">R3+:</b> Fiamma Sacra 3d8+5 + Arma 1d8+5 + Guardiani auto 3d8</div>
+              <div className="text-xs text-gray-500 mt-1 text-center">{"~18 + ~9,5 + ~13,5 = "}<b className="text-red-700">~41 danni/round</b></div>
+            </div>
+          </div>
+        </div>}
+
+        {tab==="pr"&&<div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base font-bold">Incantesimi da Preparare</h2>
+            <span className={"text-sm font-bold px-2 py-1 rounded "+(prep.length>=S.maxP?"bg-red-100 text-red-700":"bg-green-100 text-green-700")}>{prep.length+"/"+S.maxP}</span>
+          </div>
+          <p className="text-xs text-gray-500 mb-2">Tocca il quadrato per preparare/rimuovere. I 10 di dominio sono EXTRA.</p>
+          <input value={q} onChange={function(e){setQ(e.target.value)}} placeholder="🔍 Cerca incantesimo..." className="w-full mb-2 px-3 py-2 text-sm border rounded-lg bg-white"/>
+          <div className="flex gap-1 mb-2 overflow-x-auto">
+            <button onClick={function(){setFL(0)}} className={"px-2 py-1 text-xs rounded-full "+(fL===0?"bg-orange-200 text-orange-800":"bg-gray-100")}>Tutti</button>
+            {[1,2,3,4,5,6,7].map(function(l){return <button key={l} onClick={function(){setFL(l)}} className={"px-2 py-1 text-xs rounded-full "+(fL===l?"bg-orange-200 text-orange-800":"bg-gray-100")}>{"Lv"+l}</button>})}
+          </div>
+          <div className="flex gap-1 mb-2 overflow-x-auto">
+            <button onClick={function(){setFT("")}} className={"px-2 py-1 text-xs rounded-full "+(fT===""?"bg-orange-200 text-orange-800":"bg-gray-100")}>Tutti</button>
+            {["off","dif","cur","sup","ctr","uti"].map(function(t){return <button key={t} onClick={function(){setFT(t)}} className={"px-2 py-1 text-xs rounded-full "+(fT===t?"bg-orange-200 text-orange-800":"bg-gray-100")}>{t}</button>})}
+          </div>
+          <button onClick={function(){setOnlyPrep(!onlyPrep)}} className={"w-full mb-3 px-3 py-2 text-xs font-bold rounded-lg border-2 flex items-center justify-center gap-2 "+(onlyPrep?"bg-amber-500 border-amber-500 text-white":"bg-white border-amber-300 text-amber-700")}>
+            <span>{onlyPrep?"\u2713":"\u25CB"}</span> Mostra solo incantesimi preparati
+          </button>
+          {[1,2,3,4,5,6,7].filter(function(l){return fL===0||fL===l}).map(function(lv){
+            var sp=(byL[lv]||[]).filter(function(s){return (!fT||s.tg===fT)&&matchQ(s)&&(!onlyPrep||prep.indexOf(s.id)>=0)});
+            if(!sp.length)return null;
+            return <div key={lv}>
+              <h3 className="text-sm font-bold text-gray-600 mt-3 mb-1 border-b pb-1">{lv+"\u00B0 Livello "}<span className="text-xs font-normal text-gray-400">{"("+S.slot[lv]+" slot)"}</span></h3>
+              {sp.map(function(s){return <SC key={s.id} s={s} ip={prep.indexOf(s.id)>=0} onT={tog} sp={true}/>})}
+            </div>;
+          })}
+        </div>}
+
+        {tab==="do"&&<div>
+          <h2 className="text-base font-bold mb-1">Dominio della Luce</h2>
+          <p className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded mb-3">Sempre preparati, NON contano nel limite di {S.maxP}. 10 extra gratuiti!</p>
+          {DO.map(function(s){return <SC key={s.id} s={s}/>})}
+        </div>}
+
+        {tab==="ab"&&<div>
+          <h2 className="text-base font-bold mb-1">Abilita di Classe</h2>
+          <p className="text-xs text-gray-500 mb-3">Privilegi e talenti. Espandi per dettagli tattici.</p>
+          {AB.map(function(a){return <SC key={a.id} s={a}/>})}
+        </div>}
+
+        {tab==="tc"&&<div>
+          <h2 className="text-base font-bold mb-1">Trucchetti (a volonta)</h2>
+          <p className="text-xs text-gray-500 mb-3">5 trucchetti. Lanciabili all'infinito. Luce bonus dominio.</p>
+          {TR.map(function(s){return <SC key={s.id} s={s}/>})}
+        </div>}
+
+        {tab==="eq"&&<div>
+          <h2 className="text-base font-bold mb-3">Equipaggiamento</h2>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Calcolo CA</h3>
+            <div className="text-sm space-y-1">
+              <div className="flex justify-between"><span>Corazza di Piastre (base)</span><span className="font-bold">18</span></div>
+              <div className="flex justify-between"><span>Scudo</span><span className="font-bold">+2</span></div>
+              <div className="flex justify-between border-t pt-1 mt-1"><span className="font-bold">CA Totale</span><span className="font-bold text-orange-700 text-lg">20</span></div>
+              <div className="text-xs text-gray-400 mt-1">Piastre NON aggiunge mod DES. Con Scudo della Fede: CA 22.</div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Denaro</h3>
+            <div className="flex gap-4 text-sm">
+              <div className="text-center"><div className="text-xs text-yellow-600">Oro</div><div className="font-bold text-lg">590</div></div>
+              <div className="text-center"><div className="text-xs text-gray-500">Argento</div><div className="font-bold text-lg">9</div></div>
+              <div className="text-center"><div className="text-xs text-blue-600">Oggetti</div><div className="font-bold text-lg">800mo</div></div>
+            </div>
+            <div className="text-xs text-red-600 mt-2 bg-red-50 px-2 py-1 rounded">Diamanti necessari: 300mo (Rinascita), 500mo (Rianimare Morti), 1000mo (Resurrezione), 100mo (Ristorare Sup.)</div>
+          </div>
+          <div className="bg-white rounded-lg border overflow-hidden">
+            <h3 className="text-xs font-bold text-gray-500 uppercase p-3 pb-1">Inventario</h3>
+            {EQ.map(function(item,i){return <div key={i} className={"px-3 py-2 border-t "+(item.e?"bg-green-50":"")}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">{item.e?<span className="text-green-500 text-xs">{"\u25CF"}</span>:null}<span className="text-sm font-medium">{item.n}</span></div>
+                <span className="text-xs text-gray-400">{item.t}</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5 ml-4">{item.d}</p>
+            </div>})}
+          </div>
+        </div>}
+
+        {tab==="st"&&<div>
+          <h2 className="text-base font-bold mb-3">{"Riepilogo Lv."+S.lv}</h2>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Caratteristiche</h3>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {S.car.map(function(c,i){return <div key={i} className={"rounded-lg p-2 border "+(c.n==="SAG"?"bg-amber-50 border-amber-300 ring-2 ring-amber-200":"bg-gray-50")}>
+                <div className="text-xs font-bold text-gray-500">{c.n}</div>
+                <div className="text-xl font-bold">{c.m}</div>
+                <div className="text-xs text-gray-400">{"("+c.v+")"}</div>
+              </div>})}
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Tiri Salvezza</h3>
+            <div className="grid grid-cols-2 gap-1 text-sm">{S.ts.map(function(s,i){
+              return <div key={i} className={"flex justify-between px-2 py-1.5 rounded "+(s.p?"bg-green-50 border border-green-200":"")}>
+                <span>{(s.p?"\u25CF":"\u25CB")+" "+s.n}</span><span className="font-bold">{s.v}</span>
+              </div>
+            })}</div>
+          </div>
+          <div className="bg-white rounded-lg border p-3 mb-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Slot Totali</h3>
+            <div className="grid grid-cols-3 gap-2">{[1,2,3,4,5,6,7].map(function(l){
+              return <div key={l} className="bg-orange-50 rounded-lg p-2 text-center border border-orange-200">
+                <div className="text-xs text-orange-600">{l+"\u00B0"}</div><div className="text-2xl font-bold text-orange-800">{S.slot[l]}</div>
+              </div>
+            })}</div>
+          </div>
+          <div className="bg-white rounded-lg border p-3">
+            <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Info Incantatore</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {[["Caratteristica","Saggezza (+5)"],["CD Incantesimi","18"],["Bonus Attacco","+10"],["Preparabili","19 + 10 dom."],["Trucchetti","5 (fissi)"],["Percezione Pass.","20"]].map(function(pair){
+                return <div key={pair[0]} className="bg-gray-50 rounded p-2"><div className="text-xs text-gray-500">{pair[0]}</div><div className="font-bold">{pair[1]}</div></div>
+              })}
+            </div>
+          </div>
+        </div>}
+      </div>
+    </div>);
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
+</body>
+</html>
