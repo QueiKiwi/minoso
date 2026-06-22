@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mìnoso Penelù — Chierico Luce Lv.14</title>
+<title>Mìnoso Penelù — Chierico Luce Lv.15</title>
 <script>
 (function(){
   var ow=console.warn,oe=console.error;
@@ -22,14 +22,14 @@
 <script type="text/babel">
 const{useState,useEffect}=React;
 // Persistenza locale: salva e carica lo stato dal browser
-function loadSaved(){try{var s=localStorage.getItem("minoso_lv14");return s?JSON.parse(s):null}catch(e){return null}}
+function loadSaved(){try{var s=localStorage.getItem("minoso_lv15");return s?JSON.parse(s):null}catch(e){return null}}
 var SAVED=loadSaved()||{};
 
 const S={
-  nome:"Mìnoso Penelù",classe:"Chierico della Luce",lv:14,ca:20,pfMax:101,vel:"9m",bc:"+5",cd:18,att:"+10",
+  nome:"Mìnoso Penelù",classe:"Chierico della Luce",lv:15,ca:20,pfMax:108,vel:"9m",bc:"+5",cd:18,att:"+10",
   car:[{n:"FOR",v:14,m:"+2"},{n:"DES",v:10,m:"+0"},{n:"COS",v:14,m:"+2"},{n:"INT",v:12,m:"+1"},{n:"SAG",v:20,m:"+5"},{n:"CAR",v:12,m:"+1"}],
   ts:[{n:"Forza",v:"+2",p:0},{n:"Destrezza",v:"+0",p:0},{n:"Costituzione",v:"+2",p:0},{n:"Intelligenza",v:"+1",p:0},{n:"Saggezza",v:"+10",p:1},{n:"Carisma",v:"+6",p:1}],
-  slot:{1:4,2:3,3:3,4:3,5:2,6:1,7:1},maxP:19
+  slot:{1:4,2:3,3:3,4:3,5:2,6:1,7:1,8:1},maxP:20
 };
 
 const EQ=[
@@ -51,7 +51,7 @@ const AB=[
     de:"Quando creatura entro 9m attacca te o alleato (dal 6 anche alleati): reazione per svantaggio al tiro colpire. Immune se non accecabile.",
     qu:"Vs attacchi potenti, critici, proteggere alleati fragili. 5 usi/giorno.",tg:"dif"},
   {id:"fu",n:"Fulgore dell'Alba (Inc. Divinita)",tp:"Azione",us:"2/riposo breve o lungo",
-    de:"Simbolo sacro: oscurita magica entro 9m dissolta. Ostili entro 9m: TS COS (CD 18). Fallimento: 2d10+14 radiosi. Successo: meta. No concentrazione.",
+    de:"Simbolo sacro: oscurita magica entro 9m dissolta. Ostili entro 9m: TS COS (CD 18). Fallimento: 2d10+15 radiosi. Successo: meta. No concentrazione.",
     qu:"Devastante circondato (~23 danni area). Vs non morti e oscurita magica. Condivide usi con Scacciare.",tg:"off"},
   {id:"sc",n:"Scacciare Non Morti (Inc. Divinita)",tp:"Azione",us:"2/riposo (condiviso)",
     de:"Non morti entro 9m che ti vedono/sentono: TS SAG (CD 18). Fallimento: scacciato 1 min (fugge, no reazioni, solo Scatto/Schivata). DISTRUGGERE NON MORTI (lv14): GS 3 o inferiore che fallisce viene distrutto istantaneamente.",
@@ -60,7 +60,7 @@ const AB=[
     de:"Aggiungi mod SAG (+5) ai danni trucchetti chierico. Fiamma Sacra: 3d8+5 radiosi (~18,5).",
     qu:"Fiamma Sacra diventa attacco principale. Con Arma Spirituale: ~27 danni/turno senza slot.",tg:"off"},
   {id:"iv",n:"Intervento Divino",tp:"Azione",us:"1 tentativo/riposo lungo",
-    de:"Tiri d100: con 14 o meno (14%), divinita interviene con qualsiasi incantesimo chierico/dominio.",
+    de:"Tiri d100: con 15 o meno (15%), divinita interviene con qualsiasi incantesimo chierico/dominio.",
     qu:"Tentalo SEMPRE: non costa nulla se fallisce! Resurrezioni, cure massive, miracoli.",tg:"spe"},
   {id:"fo",n:"Fortunato (Talento)",tp:"Speciale",us:"3 punti/riposo lungo",
     de:"Spendi 1 punto dopo aver visto risultato per tirare d20 aggiuntivo e scegliere. O quando nemico ti attacca: tira d20 per sostituire il suo.",
@@ -269,6 +269,18 @@ const LI=[
   {id:"sp",n:"Spostamento Planare",l:7,te:"1 azione",gi:"Contatto",du:"Istantanea",
     de:"Tu + 8 creature consenzienti (mano nella mano): trasportati su un altro piano di esistenza. Serve verga metallica biforcuta da 250+ mo sintonizzata col piano.",
     qu:"Viaggio tra i piani per 9 persone! Serve la verga giusta per il piano. Per raggiungere piani superiori, inferiori, elementali. Avventure planari.",tg:"uti",c:0},
+  {id:"as8",n:"Aura Sacra",l:8,te:"1 azione",gi:"Incantatore (raggio 9m)",du:"Concentr., 1 min",
+    de:"Luce divina si diffonde in raggio 9m intorno a te. Le creature che scegli nell'area: proiettano luce fioca 1,5m e hanno VANTAGGIO a TUTTI i tiri salvezza. I nemici hanno SVANTAGGIO ai tiri per colpire contro di loro. Inoltre, quando un immondo o non morto colpisce una creatura protetta con attacco mischia: TS COS o accecato fino a fine incantesimo. Comp: reliquiario 1000+ mo.",
+    qu:"Buff difensivo DEFINITIVO per tutto il gruppo. Vantaggio a TUTTI i TS + svantaggio nemici agli attacchi = il party diventa fortezza. Devastante vs non morti e immondi (li acceca). Lancialo all'inizio di una boss fight contro demoni/non morti.",tg:"dif",c:1},
+  {id:"ca8",n:"Campo Antimagia",l:8,te:"1 azione",gi:"Incantatore (sfera 3m)",du:"Concentr., 1 ora",
+    de:"Sfera antimagia raggio 3m intorno a te (si muove con te). Dentro: la magia è soppressa. Incantesimi non possono essere lanciati, oggetti magici non funzionano, evocazioni scompaiono temporaneamente, effetti magici in corso sono sospesi. Non dissolve permanentemente. Si muove con te.",
+    qu:"Contromisura suprema vs incantatori e creature magiche. Annulla l'intera magia nemica (e la tua!). Avvicinati a un mago nemico per renderlo inutile, o usalo vs golem/elementali/non morti evocati. Attenzione: disabilita anche i TUOI incantesimi e oggetti magici.",tg:"ctr",c:0},
+  {id:"ct8",n:"Controllare Tempo Atmosferico",l:8,te:"10 min",gi:"Incantatore (7,5 km)",du:"Concentr., 8 ore",
+    de:"Controlli il tempo entro 7,5 km per 8 ore (all'aperto, con vista sul cielo). Modifichi precipitazioni, temperatura e vento di un grado per volta (1d4x10 min per cambiamento). Esempi: scatenare un temporale, calmare una bufera, creare nebbia fitta, gelo o caldo. Comp: incenso + terra/legno in acqua.",
+    qu:"Utility epica su larga scala. Crea nebbia per coprire avanzate, tempeste per ostacolare nemici, sereno per viaggi. Più narrativo che da combattimento (8 ore, 10 min lancio), ma può cambiare le sorti di battaglie campali o assedi.",tg:"uti",c:0},
+  {id:"te8",n:"Terremoto",l:8,te:"1 azione",gi:"150m",du:"Concentr., 1 min",
+    de:"Scossa sismica raggio 30m entro 150m. Terreno diventa difficile. Chi si concentra: TS COS o perde concentrazione. A inizio incantesimo e ogni turno: creature a terra fanno TS DES o cadono prone. Crepe (1d6, profonde 1d10x3m), strutture crollano (TS o 50 danni + creature dentro sotto le macerie). Effetti variano col terreno.",
+    qu:"Devastazione di massa! Area enorme (30m raggio), prono ripetuto, interrompe concentrazione nemica, abbatte edifici. Perfetto contro gruppi numerosi o per demolire fortificazioni. Attenzione agli alleati nell'area. Il tuo incantesimo da 8° più offensivo.",tg:"off",c:0},
 ];
 
 const tc={off:"bg-red-100 text-red-800",dif:"bg-blue-100 text-blue-800",cur:"bg-green-100 text-green-800",
@@ -351,25 +363,25 @@ function App(){
   const[fT,setFT]=useState("");
   const[q,setQ]=useState("");
   const[onlyPrep,setOnlyPrep]=useState(false);
-  const[slotsUsed,setSlotsUsed]=useState(SAVED.slotsUsed||{1:0,2:0,3:0,4:0,5:0,6:0,7:0});
+  const[slotsUsed,setSlotsUsed]=useState(SAVED.slotsUsed||{1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0});
   const[lampo,setLampo]=useState(SAVED.lampo||0);
   const[incan,setIncan]=useState(SAVED.incan||0);
   const[fort,setFort]=useState(SAVED.fort||0);
 
   // Salva automaticamente ogni modifica
   useEffect(function(){
-    try{localStorage.setItem("minoso_lv14",JSON.stringify({prep:prep,pf:pf,tpf:tpf,slotsUsed:slotsUsed,lampo:lampo,incan:incan,fort:fort}))}catch(e){}
+    try{localStorage.setItem("minoso_lv15",JSON.stringify({prep:prep,pf:pf,tpf:tpf,slotsUsed:slotsUsed,lampo:lampo,incan:incan,fort:fort}))}catch(e){}
   },[prep,pf,tpf,slotsUsed,lampo,incan,fort]);
 
   var setSlot=function(lv,val){setSlotsUsed(function(p){var n=Object.assign({},p);n[lv]=val;return n})};
-  var longRest=function(){setSlotsUsed({1:0,2:0,3:0,4:0,5:0,6:0,7:0});setLampo(0);setIncan(0);setFort(0);setPf(S.pfMax);setTpf(0)};
+  var longRest=function(){setSlotsUsed({1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0});setLampo(0);setIncan(0);setFort(0);setPf(S.pfMax);setTpf(0)};
   var tog=function(id){setPrep(function(p){return p.indexOf(id)>=0?p.filter(function(x){return x!==id}):p.length>=S.maxP?p:p.concat([id])})};
   var byL={};LI.forEach(function(s){if(!byL[s.l])byL[s.l]=[];byL[s.l].push(s)});
   var matchQ=function(s){if(!q)return true;var t=q.toLowerCase();return s.n.toLowerCase().indexOf(t)>=0||(s.de&&s.de.toLowerCase().indexOf(t)>=0)};
   // Applica danno: scala prima i PF temporanei, poi quelli reali
   var dmg=function(n){var rem=n;setTpf(function(t){if(t>=rem){return t-rem}rem=rem-t;return 0});setTimeout(function(){setPf(function(p){return Math.max(0,p-Math.max(0,rem))})},0)};
   var heal=function(n){setPf(function(p){return Math.min(S.pfMax,p+n)})};
-  var totSlot=0,usedSlot=0;[1,2,3,4,5,6,7].forEach(function(l){totSlot+=S.slot[l];usedSlot+=slotsUsed[l]});
+  var totSlot=0,usedSlot=0;[1,2,3,4,5,6,7,8].forEach(function(l){totSlot+=S.slot[l];usedSlot+=slotsUsed[l]});
 
   return(
     <div className="min-h-screen bg-gray-50" style={{fontFamily:"Segoe UI,system-ui,sans-serif"}}>
@@ -414,7 +426,7 @@ function App(){
           </div>
           <div className="bg-white rounded-lg border p-3 mb-3">
             <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Slot Incantesimo</h3>
-            <div className="space-y-1">{[1,2,3,4,5,6,7].map(function(l){return <SloT key={l} lv={l} tot={S.slot[l]} u={slotsUsed[l]} setU={function(v){setSlot(l,v)}}/>})}</div>
+            <div className="space-y-1">{[1,2,3,4,5,6,7,8].map(function(l){return <SloT key={l} lv={l} tot={S.slot[l]} u={slotsUsed[l]} setU={function(v){setSlot(l,v)}}/>})}</div>
           </div>
           <div className="bg-white rounded-lg border p-3 mb-3">
             <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Usi Abilita</h3>
@@ -442,7 +454,7 @@ function App(){
           <input value={q} onChange={function(e){setQ(e.target.value)}} placeholder="🔍 Cerca incantesimo..." className="w-full mb-2 px-3 py-2 text-sm border rounded-lg bg-white"/>
           <div className="flex gap-1 mb-2 overflow-x-auto">
             <button onClick={function(){setFL(0)}} className={"px-2 py-1 text-xs rounded-full "+(fL===0?"bg-orange-200 text-orange-800":"bg-gray-100")}>Tutti</button>
-            {[1,2,3,4,5,6,7].map(function(l){return <button key={l} onClick={function(){setFL(l)}} className={"px-2 py-1 text-xs rounded-full "+(fL===l?"bg-orange-200 text-orange-800":"bg-gray-100")}>{"Lv"+l}</button>})}
+            {[1,2,3,4,5,6,7,8].map(function(l){return <button key={l} onClick={function(){setFL(l)}} className={"px-2 py-1 text-xs rounded-full "+(fL===l?"bg-orange-200 text-orange-800":"bg-gray-100")}>{"Lv"+l}</button>})}
           </div>
           <div className="flex gap-1 mb-2 overflow-x-auto">
             <button onClick={function(){setFT("")}} className={"px-2 py-1 text-xs rounded-full "+(fT===""?"bg-orange-200 text-orange-800":"bg-gray-100")}>Tutti</button>
@@ -451,7 +463,7 @@ function App(){
           <button onClick={function(){setOnlyPrep(!onlyPrep)}} className={"w-full mb-3 px-3 py-2 text-xs font-bold rounded-lg border-2 flex items-center justify-center gap-2 "+(onlyPrep?"bg-amber-500 border-amber-500 text-white":"bg-white border-amber-300 text-amber-700")}>
             <span>{onlyPrep?"\u2713":"\u25CB"}</span> Mostra solo incantesimi preparati
           </button>
-          {[1,2,3,4,5,6,7].filter(function(l){return fL===0||fL===l}).map(function(lv){
+          {[1,2,3,4,5,6,7,8].filter(function(l){return fL===0||fL===l}).map(function(lv){
             var sp=(byL[lv]||[]).filter(function(s){return (!fT||s.tg===fT)&&matchQ(s)&&(!onlyPrep||prep.indexOf(s.id)>=0)});
             if(!sp.length)return null;
             return <div key={lv}>
@@ -533,7 +545,7 @@ function App(){
           </div>
           <div className="bg-white rounded-lg border p-3 mb-3">
             <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Slot Totali</h3>
-            <div className="grid grid-cols-3 gap-2">{[1,2,3,4,5,6,7].map(function(l){
+            <div className="grid grid-cols-3 gap-2">{[1,2,3,4,5,6,7,8].map(function(l){
               return <div key={l} className="bg-orange-50 rounded-lg p-2 text-center border border-orange-200">
                 <div className="text-xs text-orange-600">{l+"\u00B0"}</div><div className="text-2xl font-bold text-orange-800">{S.slot[l]}</div>
               </div>
@@ -542,7 +554,7 @@ function App(){
           <div className="bg-white rounded-lg border p-3">
             <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Info Incantatore</h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {[["Caratteristica","Saggezza (+5)"],["CD Incantesimi","18"],["Bonus Attacco","+10"],["Preparabili","19 + 10 dom."],["Trucchetti","5 (fissi)"],["Percezione Pass.","20"]].map(function(pair){
+              {[["Caratteristica","Saggezza (+5)"],["CD Incantesimi","18"],["Bonus Attacco","+10"],["Preparabili","20 + 10 dom."],["Trucchetti","5 (fissi)"],["Percezione Pass.","20"]].map(function(pair){
                 return <div key={pair[0]} className="bg-gray-50 rounded p-2"><div className="text-xs text-gray-500">{pair[0]}</div><div className="font-bold">{pair[1]}</div></div>
               })}
             </div>
